@@ -21,17 +21,16 @@ public class CartService {
 
     public Cart addToCart(Long userId, Long productId, int quantity) {
 
-        Cart cart = cartRepository.findByUserId(userId);
-
-        if (cart == null) {
-            cart = new Cart();
-            cart.setUserId(userId);
-        }
+        Cart cart = cartRepository.findByUserId(userId)
+                .orElseGet(() -> {
+                    Cart newCart = new Cart();
+                    newCart.setUserId(userId);
+                    return cartRepository.save(newCart);
+                });
 
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new RuntimeException("Product not found"));
 
-        // check if product already exists
         Optional<CartItem> existingItem = cart.getItems()
                 .stream()
                 .filter(item -> item.getProduct().getId().equals(productId))
@@ -41,6 +40,7 @@ public class CartService {
             existingItem.get().setQuantity(
                     existingItem.get().getQuantity() + quantity);
         } else {
+
             CartItem item = new CartItem();
             item.setProduct(product);
             item.setQuantity(quantity);
@@ -53,17 +53,22 @@ public class CartService {
     }
 
     public Cart getCart(Long userId) {
-        return cartRepository.findByUserId(userId);
+        Optional<Cart> optional = cartRepository.findByUserId(userId) ;
+        return optional.get();
     }
 
     public Cart removeItem(Long userId, Long productId) {
 
-        Cart cart = cartRepository.findByUserId(userId);
+        Optional<Cart> optionalCart = cartRepository.findByUserId(userId);
 
-        if(cart != null && cart.getItems() != null) {
-            cart.getItems().removeIf(item ->
-                    item.getProduct().getId().equals(productId));
+        if (optionalCart.isEmpty()) {
+            throw new RuntimeException("Cart not found for user " + userId);
         }
+
+        Cart cart = optionalCart.get();
+
+        cart.getItems().removeIf(item ->
+                item.getProduct().getId().equals(productId));
 
         return cartRepository.save(cart);
     }

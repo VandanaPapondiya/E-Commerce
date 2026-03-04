@@ -1,5 +1,6 @@
 package com.example.myproject.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 @Entity
@@ -14,7 +15,9 @@ public class CartItem {
     @ManyToOne
     private Product product;
 
+
     @ManyToOne
+    @JsonIgnore
     private Cart cart;
 
     public Long getId() {
