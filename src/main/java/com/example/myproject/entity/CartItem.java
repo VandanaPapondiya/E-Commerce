@@ -17,12 +17,8 @@ public class CartItem {
     @ManyToOne
     private Cart cart;
 
-    public void setProduct(Product product) {
-        this.product=product;
-    }
-
-    public void setQuantity(int quantity) {
-        this.quantity=quantity;
+    public Long getId() {
+        return id;
     }
 
     public Cart getCart() {
@@ -33,12 +29,8 @@ public class CartItem {
         this.cart = cart;
     }
 
-    public Product getProduct() {
-        return product;
-    }
-
-    public Long getId() {
-        return id;
+    public void setProduct(Product product) {
+        this.product = product;
     }
 
     public void setId(Long id) {
@@ -49,5 +41,13 @@ public class CartItem {
         return quantity;
     }
 
-    // getters setters
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
+    }
+
+    public Product getProduct() {
+        return product;
+    }
+
 }
+
