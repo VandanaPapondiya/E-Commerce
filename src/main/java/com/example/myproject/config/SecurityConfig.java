@@ -2,6 +2,7 @@ package com.example.myproject.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -20,10 +21,19 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**", "/api/products/**","/api/cart/**").permitAll()
-                        .anyRequest().permitAll() // register + login open
+                        .requestMatchers("/api/auth/**", "/api/products",
+                                "/api/cart/**","/api/orders/place","/api/orders/user/**",
+                                "/api/orders/*/status","/api/orders/all","/api/orders/*/cancel",
+                                "/api/orders/**","/api/categories/**",
+                                "/api/products/category/**","/api/products/**").permitAll()
+                        .requestMatchers("/api/products/add").hasRole("ADMIN")
 
-                );
+                        .requestMatchers("/api/products/delete/**").hasRole("ADMIN")
+
+                        .requestMatchers("/api/products/**").hasAnyRole("USER","ADMIN")
+                        .anyRequest().permitAll()
+                )
+                .httpBasic(Customizer.withDefaults());
 
         return http.build();
     }

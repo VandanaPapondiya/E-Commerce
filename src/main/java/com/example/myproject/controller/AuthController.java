@@ -5,6 +5,9 @@ import com.example.myproject.dto.LoginRequest;
 import com.example.myproject.dto.LoginResponse;
 import com.example.myproject.dto.RegisterRequest;
 import com.example.myproject.dto.RegisterResponse;
+import com.example.myproject.entity.Role;
+import com.example.myproject.entity.User;
+import com.example.myproject.repository.UserRepository;
 import com.example.myproject.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +19,10 @@ public class AuthController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    UserRepository userRepository;
+
 
     @PostMapping("/register")
     public RegisterResponse register(@RequestBody RegisterRequest request) {

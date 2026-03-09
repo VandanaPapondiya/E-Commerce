@@ -31,29 +31,45 @@ public class CartService {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new RuntimeException("Product not found"));
 
+        if (product.getStock() < quantity) {
+            throw new RuntimeException("Out of stock! Available quantity: " + product.getStock());
+        }
+
         Optional<CartItem> existingItem = cart.getItems()
                 .stream()
                 .filter(item -> item.getProduct().getId().equals(productId))
                 .findFirst();
 
         if (existingItem.isPresent()) {
-            existingItem.get().setQuantity(
-                    existingItem.get().getQuantity() + quantity);
+
+            CartItem item = existingItem.get();
+
+            int newQuantity = item.getQuantity() + quantity;
+
+            // 🔥 Check total quantity against stock
+            if (product.getStock() < newQuantity) {
+                throw new RuntimeException("Out of stock! Available quantity: " + product.getStock());
+            }
+
+            item.setQuantity(newQuantity);
+
         } else {
 
-            CartItem item = new CartItem();
-            item.setProduct(product);
-            item.setQuantity(quantity);
-            item.setCart(cart);
+            CartItem newItem = new CartItem();
+            newItem.setProduct(product);
+            newItem.setQuantity(quantity);
+            newItem.setCart(cart);
 
-            cart.getItems().add(item);
+            cart.getItems().add(newItem);
         }
 
         return cartRepository.save(cart);
     }
-
     public Cart getCart(Long userId) {
         Optional<Cart> optional = cartRepository.findByUserId(userId) ;
+        if (optional.isEmpty()) {
+            throw new RuntimeException("Cart not found for user " + userId);
+        }
         return optional.get();
     }
 

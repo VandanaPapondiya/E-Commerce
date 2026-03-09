@@ -20,24 +20,25 @@ public class User{
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String name;
+    private String username;
 
     @Column(unique = true, nullable = false)
     private String email;
 
     private String password;
 
-    private String role;
+    @Enumerated(EnumType.STRING)
+    private Role role;
 
     public void setName(String name) {
-       this.name=name;
+       this.username=name;
     }
 
     public void setEmail(String email) {
         this.email=email;
     }
 
-    public void setRole(String user) {
+    public void setRole(Role user) {
         this.role=user;
     }
 
@@ -51,5 +52,9 @@ public class User{
 
     public @Nullable String getPassword() {
         return password;
+    }
+
+    public Role getRole() {
+        return role;
     }
 }
