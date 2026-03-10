@@ -25,13 +25,14 @@ public class SecurityConfig {
                                 "/api/cart/**","/api/orders/place","/api/orders/user/**",
                                 "/api/orders/*/status","/api/orders/all","/api/orders/*/cancel",
                                 "/api/orders/**","/api/categories/**",
-                                "/api/products/category/**","/api/products/**").permitAll()
+                                "/api/products/category/**","/api/products/**","/api/address/add",
+                                "/api/address/user/**","/api/payment/**").permitAll()
                         .requestMatchers("/api/products/add").hasRole("ADMIN")
 
                         .requestMatchers("/api/products/delete/**").hasRole("ADMIN")
 
                         .requestMatchers("/api/products/**").hasAnyRole("USER","ADMIN")
-                        .anyRequest().permitAll()
+                        .anyRequest().authenticated()
                 )
                 .httpBasic(Customizer.withDefaults());
 

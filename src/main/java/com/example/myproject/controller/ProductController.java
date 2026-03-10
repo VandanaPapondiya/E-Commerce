@@ -19,7 +19,7 @@ public class ProductController {
     @Autowired
     private ProductRepository productRepository;
 
-    @PostMapping
+    @PostMapping("/add")
     public Product addProduct(@RequestBody Product product) {
         return productService.addProduct(product);
     }
@@ -45,6 +45,7 @@ public class ProductController {
 
     @GetMapping("/category/{id}")
     public List<Product> getProductsByCategory(@PathVariable Long id){
+
         return productRepository.findByCategoryId(id);
     }
 

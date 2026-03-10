@@ -14,7 +14,7 @@ public class CategoryController {
     @Autowired
     private CategoryService categoryService;
 
-    @PostMapping
+    @PostMapping("/add")
     public Category addCategory(@RequestBody Category category){
         return categoryService.addCategory(category);
     }
