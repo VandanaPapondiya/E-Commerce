@@ -3,6 +3,7 @@ package com.example.myproject.service;
 import com.example.myproject.entity.Cart;
 import com.example.myproject.entity.CartItem;
 import com.example.myproject.entity.Product;
+import com.example.myproject.exception.ResourceNotFoundException;
 import com.example.myproject.repository.CartRepository;
 import com.example.myproject.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,10 +30,10 @@ public class CartService {
                 });
 
         Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new RuntimeException("Product not found"));
+                .orElseThrow(() ->new ResourceNotFoundException("Product not found"));
 
         if (product.getStock() < quantity) {
-            throw new RuntimeException("Out of stock! Available quantity: " + product.getStock());
+            throw new ResourceNotFoundException("Out of stock! Available quantity: " + product.getStock());
         }
 
         Optional<CartItem> existingItem = cart.getItems()
@@ -48,7 +49,7 @@ public class CartService {
 
             // 🔥 Check total quantity against stock
             if (product.getStock() < newQuantity) {
-                throw new RuntimeException("Out of stock! Available quantity: " + product.getStock());
+                throw new ResourceNotFoundException("Out of stock: " + product.getStock());
             }
 
             item.setQuantity(newQuantity);
@@ -68,7 +69,7 @@ public class CartService {
     public Cart getCart(Long userId) {
         Optional<Cart> optional = cartRepository.findByUserId(userId) ;
         if (optional.isEmpty()) {
-            throw new RuntimeException("Cart not found for user " + userId);
+            throw new ResourceNotFoundException("Cart not found for user " + userId);
         }
         return optional.get();
     }
@@ -78,7 +79,7 @@ public class CartService {
         Optional<Cart> optionalCart = cartRepository.findByUserId(userId);
 
         if (optionalCart.isEmpty()) {
-            throw new RuntimeException("Cart not found for user " + userId);
+            throw new ResourceNotFoundException("Cart not found for user " + userId);
         }
 
         Cart cart = optionalCart.get();

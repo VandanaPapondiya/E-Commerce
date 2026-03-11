@@ -1,5 +1,6 @@
 package com.example.myproject.controller;
 
+import com.example.myproject.dto.ProductDTO;
 import com.example.myproject.entity.Product;
 import com.example.myproject.repository.ProductRepository;
 import com.example.myproject.service.ProductService;
@@ -20,8 +21,8 @@ public class ProductController {
     private ProductRepository productRepository;
 
     @PostMapping("/add")
-    public Product addProduct(@RequestBody Product product) {
-        return productService.addProduct(product);
+    public ProductDTO addProduct(@RequestBody ProductDTO productDTO){
+        return productService.addProduct(productDTO);
     }
 
     @GetMapping

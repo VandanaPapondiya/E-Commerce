@@ -14,10 +14,12 @@ public class CategoryService {
     private CategoryRepository categoryRepository;
 
     public Category addCategory(Category category){
+
         return categoryRepository.save(category);
     }
 
     public List<Category> getAllCategories(){
+
         return categoryRepository.findAll();
     }
 }

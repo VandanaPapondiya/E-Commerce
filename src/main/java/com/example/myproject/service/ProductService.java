@@ -1,9 +1,12 @@
 package com.example.myproject.service;
 
+import com.example.myproject.dto.ProductDTO;
 import com.example.myproject.entity.Category;
 import com.example.myproject.entity.Product;
+import com.example.myproject.exception.ResourceNotFoundException;
 import com.example.myproject.repository.CategoryRepository;
 import com.example.myproject.repository.ProductRepository;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Page;
@@ -19,16 +22,21 @@ public class ProductService {
     @Autowired
     private CategoryRepository categoryRepository;
 
-    public Product addProduct(Product product) {
+    @Autowired
+    private ModelMapper modelMapper;
 
-            Long categoryId = product.getCategory().getId();
+    public ProductDTO addProduct(ProductDTO productDTO){
 
-            Category category = categoryRepository.findById(categoryId)
-                    .orElseThrow(() -> new RuntimeException("Category not found"));
+        Product product = modelMapper.map(productDTO, Product.class);
 
-            product.setCategory(category);
+        Category category = categoryRepository
+                .findById(productDTO.getCategoryId())
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
+        product.setCategory(category);
 
-            return productRepository.save(product);
+        Product savedProduct = productRepository.save(product);
+
+        return modelMapper.map(savedProduct, ProductDTO.class);
     }
 
     public List<Product> getAllProducts() {

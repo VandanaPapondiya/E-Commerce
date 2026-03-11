@@ -2,6 +2,7 @@ package com.example.myproject.service;
 
 import com.example.myproject.entity.Order;
 import com.example.myproject.entity.Payment;
+import com.example.myproject.exception.ResourceNotFoundException;
 import com.example.myproject.repository.OrderRepository;
 import com.example.myproject.repository.PaymentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +20,7 @@ public class PaymentService {
     public Payment makePayment(Long orderId, String method){
 
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
 
         Payment payment = new Payment();
 

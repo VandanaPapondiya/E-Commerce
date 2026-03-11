@@ -1,9 +1,12 @@
 package com.example.myproject.service;
 
+import com.example.myproject.dto.OrderDTO;
 import com.example.myproject.entity.*;
+import com.example.myproject.exception.ResourceNotFoundException;
 import com.example.myproject.repository.CartRepository;
 import com.example.myproject.repository.OrderRepository;
 import com.example.myproject.repository.ProductRepository;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -23,15 +26,16 @@ public class OrderService {
     @Autowired
     private ProductRepository productRepository;
 
-    public Order placeOrder(Long userId) {
+    public OrderDTO placeOrder(Order order) {
+        Long userId = order.getUserId();
         Cart cart = cartRepository.findByUserId(userId)
-                .orElseThrow(() -> new RuntimeException("Cart is empty"));
+                .orElseThrow(() ->new ResourceNotFoundException("Cart is empty"));
 
 
-        Order order = new Order();
-        order.setUserId(userId);
-        order.setOrderDate(LocalDateTime.now());
-        order.setStatus(OrderStatus.PLACED);
+        Order order1 = new Order();
+        order1.setUserId(userId);
+        order1.setOrderDate(LocalDateTime.now());
+        order1.setStatus(OrderStatus.PLACED);
 
         double total = 0;
 
@@ -64,32 +68,43 @@ public class OrderService {
         //  Clear cart
         cart.getItems().clear();
         cartRepository.save(cart);
+        Order savedOrder = orderRepository.save(order);
 
-        return orderRepository.save(order);
+        return modelMapper.map(savedOrder, OrderDTO.class);
     }
 
     public List<Order> getOrdersByUser(Long userId) {
+        Order order = orderRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         return orderRepository.findByUserId(userId);
     }
 
     public Order updateOrderStatus(Long orderId, OrderStatus status){
 
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
+                .orElseThrow(() ->new ResourceNotFoundException("Product not found"));
 
         order.setStatus(status);
 
         return orderRepository.save(order);
     }
 
-    public List<Order> getAllOrders(){
-        return orderRepository.findAll();
+    @Autowired
+    private ModelMapper modelMapper;
+
+    public List<OrderDTO> getAllOrders(){
+
+        List<Order> orders = orderRepository.findAll();
+
+        return orders.stream()
+                .map(order -> modelMapper.map(order, OrderDTO.class))
+                .toList();
     }
 
     public Order cancelOrder(Long orderId){
 
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
 
         order.setStatus(OrderStatus.CANCELLED);
 
@@ -99,7 +114,7 @@ public class OrderService {
     public void deleteOrder(Long orderId){
 
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
 
         orderRepository.delete(order);
     }
