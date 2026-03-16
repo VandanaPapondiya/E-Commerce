@@ -8,6 +8,8 @@ import com.example.myproject.repository.CartRepository;
 import com.example.myproject.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.Iterator;
 import java.util.Optional;
 
 
@@ -86,6 +88,63 @@ public class CartService {
 
         cart.getItems().removeIf(item ->
                 item.getProduct().getId().equals(productId));
+
+        return cartRepository.save(cart);
+    }
+
+    public Cart increaseQuantity(Long userId, Long productId){
+
+        Cart cart = cartRepository.findByUserId(userId)
+                .orElseGet(() -> {
+                    Cart newCart = new Cart();
+                    newCart.setUserId(userId);
+                    return cartRepository.save(newCart);
+                });
+
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() ->new ResourceNotFoundException("Product not found"));
+
+        for(CartItem item : cart.getItems()){
+                if(product.getStock() > item.getQuantity()) {
+                    if(item.getProduct().getId().equals(productId)){
+                        item.setQuantity(item.getQuantity()+1);
+                    }
+                }
+                else{
+                    throw new ResourceNotFoundException("Out of stock! Available quantity: " + product.getStock());
+                }
+
+
+        }
+
+        return cartRepository.save(cart);
+    }
+    public Cart decreaseQuantity(Long userId, Long productId){
+
+        Cart cart = cartRepository.findByUserId(userId)
+                .orElseGet(() -> {
+                    Cart newCart = new Cart();
+                    newCart.setUserId(userId);
+                    return cartRepository.save(newCart);
+                });
+
+        Iterator<CartItem> iterator = cart.getItems().iterator();
+
+        while(iterator.hasNext()){
+
+            CartItem item = iterator.next();
+
+            if(item.getProduct().getId().equals(productId)){
+
+                if(item.getQuantity() > 1){
+                    item.setQuantity(item.getQuantity()-1);
+                }else{
+                    iterator.remove();
+                }
+
+            }
+
+        }
 
         return cartRepository.save(cart);
     }
