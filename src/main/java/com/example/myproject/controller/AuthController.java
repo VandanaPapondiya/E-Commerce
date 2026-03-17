@@ -13,24 +13,36 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import io.jsonwebtoken.*;
+import org.springframework.stereotype.Component;
+import java.util.Date;
+
 @RestController
 @RequestMapping("/api/auth")
+@CrossOrigin(origins = "http://localhost:3000")
 public class AuthController {
 
     @Autowired
-    private UserService userService;
+    private JwtUtil jwtUtil;
 
     @Autowired
-    UserRepository userRepository;
-
-
-    @PostMapping("/register")
-    public RegisterResponse register(@RequestBody RegisterRequest request) {
-        return userService.registerUser(request);
-    }
+    private UserRepository userRepository;
 
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request) {
-        return ResponseEntity.ok(userService.loginUser(request));
+    public String login(@RequestBody User user){
+
+        User existingUser = userRepository.findByUsername(user.getUsername())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if(!existingUser.getPassword().equals(user.getPassword())){
+            throw new RuntimeException("Invalid password");
+        }
+
+        return jwtUtil.generateToken(user.getUsername());
+    }
+
+    @PostMapping("/signup")
+    public User signup(@RequestBody User user){
+        return userRepository.save(user);
     }
 }

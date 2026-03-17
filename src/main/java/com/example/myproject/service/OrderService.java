@@ -27,11 +27,13 @@ public class OrderService {
     private ProductRepository productRepository;
 
     public OrderDTO placeOrder(Order order) {
+
         Long userId = order.getUserId();
+
         Cart cart = cartRepository.findByUserId(userId)
-                .orElseThrow(() ->new ResourceNotFoundException("Cart is empty"));
+                .orElseThrow(() -> new ResourceNotFoundException("Cart is empty"));
 
-
+        // ✅ Use this object
         Order order1 = new Order();
         order1.setUserId(userId);
         order1.setOrderDate(LocalDateTime.now());
@@ -43,12 +45,11 @@ public class OrderService {
 
             Product product = cartItem.getProduct();
 
-            //  Final stock validation
             if (product.getStock() < cartItem.getQuantity()) {
-                throw new RuntimeException("Product out of stock: " + product.getName());
+                throw new RuntimeException("Out of stock: " + product.getName());
             }
 
-            //  Reduce stock
+            // reduce stock
             product.setStock(product.getStock() - cartItem.getQuantity());
             productRepository.save(product);
 
@@ -56,19 +57,24 @@ public class OrderService {
             orderItem.setProduct(product);
             orderItem.setQuantity(cartItem.getQuantity());
             orderItem.setPrice(product.getPrice());
-            orderItem.setOrder(order);
 
-            total += orderItem.getPrice() * orderItem.getQuantity();
+            // ✅ IMPORTANT
+            orderItem.setOrder(order1);
 
-            order.getItems().add(orderItem);
+            total += product.getPrice() * cartItem.getQuantity();
+
+            // ✅ Add in order1
+            order1.getItems().add(orderItem);
         }
 
-        order.setTotalAmount(total);
+        order1.setTotalAmount(total);
 
-        //  Clear cart
+        // ✅ SAVE CORRECT OBJECT
+        Order savedOrder = orderRepository.save(order1);
+
+        // ✅ Clear cart
         cart.getItems().clear();
         cartRepository.save(cart);
-        Order savedOrder = orderRepository.save(order);
 
         return modelMapper.map(savedOrder, OrderDTO.class);
     }
