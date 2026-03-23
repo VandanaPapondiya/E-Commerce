@@ -3,13 +3,15 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import ErrorMessage from "./ErrorMessage";
 
-function Register(){
+function Register() {
 
   const navigate = useNavigate();
 
-  const [username, setUsername] = useState("");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
@@ -18,10 +20,16 @@ function Register(){
   const validateForm = () => {
     const errors = {};
 
-    if (!username.trim()) {
-      errors.username = "Username is required";
-    } else if (username.length < 3) {
-      errors.username = "Username must be at least 3 characters";
+    if (!name.trim()) {
+      errors.name = "Username is required";
+    } else if (name.length < 3) {
+      errors.name = "Username must be at least 3 characters";
+    }
+
+    if (!email.trim()) {
+      errors.email = "Email is required";
+    } else if (!/\S+@\S+\.\S+/.test(email)) {
+      errors.email = "Enter a valid email";
     }
 
     if (!password) {
@@ -40,131 +48,108 @@ function Register(){
     return Object.keys(errors).length === 0;
   };
 
-  const handleRegister = () => {
+  const handleRegister = async () => {
     setError("");
     setSuccess("");
 
-    if (!validateForm()) {
-      return;
-    }
+    if (!validateForm()) return;
 
     setLoading(true);
 
-    axios.post("http://localhost:8080/api/auth/register", {
-      username,
-      password
-    })
-    .then(res => {
-      setSuccess("Registration Successful! Redirecting to login...");
+    try {
+      const res = await axios.post("http://localhost:8080/api/auth/register", {
+        name,
+        email,
+        password
+      });
+
+      console.log("SUCCESS RESPONSE 👉", res.data);
+
+      setSuccess(res.data.message || "Registration Successful!");
+
       setTimeout(() => {
         navigate("/");
       }, 1500);
-    })
-    .catch(err => {
-      setError(err.response?.data?.message || "Registration Failed");
-    })
-    .finally(() => {
+
+    } catch (err) {
+
+      console.log("FULL ERROR 👉", err);
+
+      // 🔥 important debug
+      if (err.response) {
+        console.log("BACKEND ERROR 👉", err.response.data);
+        setError(err.response.data.message || "Registration Failed");
+      } else if (err.request) {
+        setError("Server not responding (check backend)");
+      } else {
+        setError("Something went wrong");
+      }
+
+    } finally {
       setLoading(false);
-    });
-
-  };
-
-  const handleKeyPress = (e) => {
-    if (e.key === "Enter") {
-      handleRegister();
     }
   };
 
-  return(
-    <div className="container d-flex justify-content-center align-items-center" style={{height:"100vh"}}>
-
-      <div className="card p-4 shadow" style={{width:"300px"}}>
+  return (
+    <div className="container d-flex justify-content-center align-items-center" style={{ height: "100vh" }}>
+      <div className="card p-4 shadow" style={{ width: "300px" }}>
 
         <h3 className="text-center mb-3">📝 Register</h3>
 
-        {error && (
-          <ErrorMessage
-            message={error}
-            type="danger"
-            onClose={() => setError("")}
-          />
-        )}
+        {error && <ErrorMessage message={error} type="danger" onClose={() => setError("")} />}
+        {success && <ErrorMessage message={success} type="success" onClose={() => setSuccess("")} autoClose={false} />}
 
-        {success && (
-          <ErrorMessage
-            message={success}
-            type="success"
-            onClose={() => setSuccess("")}
-            autoClose={false}
-          />
-        )}
-
+        {/* Name */}
         <div className="mb-3">
-          <label className="form-label">Username</label>
+          <label>Name</label>
           <input
-            type="text"
-            className={`form-control ${validationErrors.username ? "is-invalid" : ""}`}
-            placeholder="Enter username"
-            value={username}
-            onChange={e => setUsername(e.target.value)}
-            onKeyPress={handleKeyPress}
-            disabled={loading}
+            className={`form-control ${validationErrors.name ? "is-invalid" : ""}`}
+            value={name}
+            onChange={(e) => setName(e.target.value)}
           />
-          {validationErrors.username && (
-            <div className="invalid-feedback d-block">{validationErrors.username}</div>
-          )}
+          {validationErrors.name && <div className="text-danger">{validationErrors.name}</div>}
         </div>
 
+        {/* Email */}
         <div className="mb-3">
-          <label className="form-label">Password</label>
+          <label>Email</label>
+          <input
+            className={`form-control ${validationErrors.email ? "is-invalid" : ""}`}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+          {validationErrors.email && <div className="text-danger">{validationErrors.email}</div>}
+        </div>
+
+        {/* Password */}
+        <div className="mb-3">
+          <label>Password</label>
           <input
             type="password"
             className={`form-control ${validationErrors.password ? "is-invalid" : ""}`}
-            placeholder="Enter password (min 4 characters)"
             value={password}
-            onChange={e => setPassword(e.target.value)}
-            onKeyPress={handleKeyPress}
-            disabled={loading}
+            onChange={(e) => setPassword(e.target.value)}
           />
-          {validationErrors.password && (
-            <div className="invalid-feedback d-block">{validationErrors.password}</div>
-          )}
+          {validationErrors.password && <div className="text-danger">{validationErrors.password}</div>}
         </div>
 
+        {/* Confirm Password */}
         <div className="mb-3">
-          <label className="form-label">Confirm Password</label>
+          <label>Confirm Password</label>
           <input
             type="password"
             className={`form-control ${validationErrors.confirmPassword ? "is-invalid" : ""}`}
-            placeholder="Confirm password"
             value={confirmPassword}
-            onChange={e => setConfirmPassword(e.target.value)}
-            onKeyPress={handleKeyPress}
-            disabled={loading}
+            onChange={(e) => setConfirmPassword(e.target.value)}
           />
-          {validationErrors.confirmPassword && (
-            <div className="invalid-feedback d-block">{validationErrors.confirmPassword}</div>
-          )}
+          {validationErrors.confirmPassword && <div className="text-danger">{validationErrors.confirmPassword}</div>}
         </div>
 
-        <button
-          className="btn btn-primary w-100 mb-2"
-          onClick={handleRegister}
-          disabled={loading}
-        >
+        <button className="btn btn-primary w-100" onClick={handleRegister} disabled={loading}>
           {loading ? "Registering..." : "Register"}
         </button>
 
-        <button
-          className="btn btn-link w-100"
-          onClick={() => navigate("/")}
-          disabled={loading}
-        >
-          Already have account? Login
-        </button>
-
       </div>
-
     </div>
   );
 }
