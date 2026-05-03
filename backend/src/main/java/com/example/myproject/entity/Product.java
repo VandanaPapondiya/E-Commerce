@@ -18,6 +18,14 @@ public class Product {
 
     private int quantity;
 
+    private String imageUrl;
+
+    @Column(columnDefinition = "double default 0")
+    private double averageRating;
+
+    @Column(columnDefinition = "int default 0")
+    private int reviewCount;
+
     @ManyToOne
     @JoinColumn(name = "category_id")
     private Category category;
@@ -74,5 +82,29 @@ public class Product {
 
     public void setCategory(Category category) {
         this.category = category;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
+    public double getAverageRating() {
+        return averageRating;
+    }
+
+    public void setAverageRating(double averageRating) {
+        this.averageRating = averageRating;
+    }
+
+    public int getReviewCount() {
+        return reviewCount;
+    }
+
+    public void setReviewCount(int reviewCount) {
+        this.reviewCount = reviewCount;
     }
 }

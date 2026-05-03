@@ -21,17 +21,32 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**", "/api/products",
-                                "/api/cart/**","/api/orders/place","/api/orders/user/**",
-                                "/api/orders/*/status","/api/orders/all","/api/orders/*/cancel",
-                                "/api/orders/**","/api/categories/**",
-                                "/api/products/category/**","/api/products/**","/api/address/add",
-                                "/api/address/user/**","/api/payment/**").permitAll()
-                        .requestMatchers("/api/products/add").hasRole("ADMIN")
-
-                        .requestMatchers("/api/products/delete/**").hasRole("ADMIN")
-
-                        .requestMatchers("/api/products/**").hasAnyRole("USER","ADMIN")
+                        // Auth endpoints
+                        .requestMatchers("/api/auth/**").permitAll()
+                        // Product endpoints
+                        .requestMatchers("/api/products/**").permitAll()
+                        // Category endpoints
+                        .requestMatchers("/api/categories/**").permitAll()
+                        // Cart endpoints
+                        .requestMatchers("/api/cart/**").permitAll()
+                        // Order endpoints
+                        .requestMatchers("/api/orders/**").permitAll()
+                        // Address endpoints
+                        .requestMatchers("/api/address/**").permitAll()
+                        // Payment endpoints
+                        .requestMatchers("/api/payment/**").permitAll()
+                        // Review endpoints
+                        .requestMatchers("/api/reviews/**").permitAll()
+                        // Wishlist endpoints
+                        .requestMatchers("/api/wishlist/**").permitAll()
+                        // Coupon endpoints
+                        .requestMatchers("/api/coupons/**").permitAll()
+                        // Report endpoints
+                        .requestMatchers("/api/reports/**").permitAll()
+                        // User management endpoints
+                        .requestMatchers("/api/users/**").permitAll()
+                        // Swagger UI
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
                         .anyRequest().authenticated()
                 )
                 .httpBasic(Customizer.withDefaults());
