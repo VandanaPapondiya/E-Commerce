@@ -9,7 +9,7 @@ function Login(){
   const navigate = useNavigate();
   const { login } = useUser();
 
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -19,8 +19,8 @@ function Login(){
   const validateForm = () => {
     const errors = {};
 
-    if (!username.trim()) {
-      errors.username = "Username is required";
+    if (!email.trim()) {
+      errors.email = "Email or username is required";
     }
 
     if (!password) {
@@ -37,82 +37,68 @@ function Login(){
     setError("");
     setSuccess("");
 
-    if (!validateForm()) {
-      return;
-    }
+    if (!validateForm()) return;
 
     setLoading(true);
 
     axios.post("http://localhost:8080/api/auth/login", {
-      username,
+      email,    // backend supports both email and username via this field
       password
     })
     .then(res => {
-      console.log("Login response:", res.data);
-
-      // Use UserContext login method
-      login(res.data);
-
-      // Also dispatch event for additional listeners
+      const data = res.data;
+      // data: { token, refreshToken, userId, username, role, email, message }
+      login(data);
       window.dispatchEvent(new Event("login"));
-
       setSuccess("Login Successful! Redirecting...");
       setTimeout(() => {
-        navigate("/products");
+        if (data.role === "ADMIN") {
+          navigate("/admin");
+        } else {
+          navigate("/products");
+        }
       }, 1000);
     })
     .catch(err => {
-      setError(err.response?.data?.message || "Invalid username or password");
+      const msg = err.response?.data?.message || err.response?.data || "Invalid email or password";
+      setError(typeof msg === "string" ? msg : "Invalid credentials");
     })
     .finally(() => {
       setLoading(false);
     });
-
   };
 
   const handleKeyPress = (e) => {
-    if (e.key === "Enter") {
-      handleLogin();
-    }
+    if (e.key === "Enter") handleLogin();
   };
 
   return(
     <div className="container d-flex justify-content-center align-items-center" style={{height:"100vh"}}>
 
-      <div className="card p-4 shadow" style={{width:"300px"}}>
+      <div className="card p-4 shadow" style={{width:"340px"}}>
 
         <h3 className="text-center mb-3">🔐 Login</h3>
 
         {error && (
-          <ErrorMessage
-            message={error}
-            type="danger"
-            onClose={() => setError("")}
-          />
+          <ErrorMessage message={error} type="danger" onClose={() => setError("")} />
         )}
-
         {success && (
-          <ErrorMessage
-            message={success}
-            type="success"
-            onClose={() => setSuccess("")}
-            autoClose={false}
-          />
+          <ErrorMessage message={success} type="success" onClose={() => setSuccess("")} autoClose={false} />
         )}
 
         <div className="mb-3">
-          <label className="form-label">Username</label>
+          <label className="form-label">Email / Username</label>
           <input
             type="text"
-            className={`form-control ${validationErrors.username ? "is-invalid" : ""}`}
-            placeholder="Enter username"
-            value={username}
-            onChange={e => setUsername(e.target.value)}
+            className={`form-control ${validationErrors.email ? "is-invalid" : ""}`}
+            placeholder="Enter email or username"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
             onKeyPress={handleKeyPress}
             disabled={loading}
           />
-          {validationErrors.username && (
-            <div className="invalid-feedback d-block">{validationErrors.username}</div>
+          {validationErrors.email && (
+            <div className="invalid-feedback d-block">{validationErrors.email}</div>
           )}
         </div>
 

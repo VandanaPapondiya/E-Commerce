@@ -16,7 +16,7 @@ function OrderConfirmation() {
     if (orderId && userId) {
       axios.get(`http://localhost:8080/api/orders/user/${userId}`)
         .then(res => {
-          const foundOrder = res.data.find(o => o.id == orderId);
+          const foundOrder = res.data.find(o => o.id === Number(orderId));
           if (foundOrder) {
             setOrder(foundOrder);
           } else {
